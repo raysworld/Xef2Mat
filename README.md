@@ -4,9 +4,6 @@ WPF-based converter for converting Kinect Studio data file (.xef) to Matlab data
 ###Author
 Ray Litchi  
 
-###Contact
-raysworld@outlook.com  
-
 ###Date
 2016-11-07  
 
