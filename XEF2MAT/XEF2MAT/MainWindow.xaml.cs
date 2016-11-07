@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows;
 
 /***********************************************************************************************
@@ -132,17 +133,18 @@ namespace XEF2MAT
                 if (item.DataTypeName.Equals("Nui Depth"))
                 {
                     state = "Depth";
-
+                    
                     KStudioSeekableEventStream stream = item as KStudioSeekableEventStream;
                     this.frameCount = (int)stream.EventCount;
                     timing = new ushort[frameCount];
 
                     for (uint i = 0; i < frameCount; i++)
                     {
-                        b.ReportProgress((int)((float)i / stream.EventCount * 100));
+                        b.ReportProgress((int)((float)i / frameCount * 100));
 
+                        Thread.Sleep(100);
                         var curr_event = stream.ReadEvent(i);
-                        unsafe
+                        //unsafe
                         {
                             int size = outputData.Length * sizeof(ushort);
                             IntPtr ip = Marshal.AllocHGlobal(size);
@@ -167,10 +169,10 @@ namespace XEF2MAT
 
                     for (uint i = 0; i < frameCount; i++)
                     {
-                        b.ReportProgress((int)((float)i / stream.EventCount * 100));
+                        b.ReportProgress((int)((float)i / frameCount * 100));
 
                         var curr_event = stream.ReadEvent(i);
-                        unsafe
+                        //unsafe
                         {
                             int size = outputData.Length * sizeof(ushort);
                             IntPtr ip = Marshal.AllocHGlobal(size);
