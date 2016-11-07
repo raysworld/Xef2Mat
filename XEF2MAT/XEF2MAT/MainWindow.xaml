@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:XEF2MAT"
         mc:Ignorable="d"
-        Title="Xef2Mat Converter" Width="327.874" Loaded="Window_Loaded" ResizeMode="CanMinimize" Height="155.834">
+        Title="Xef2Mat Converter" Width="327.874" Loaded="Window_Loaded" ResizeMode="CanMinimize" Height="155.834" Icon="kinect.ico">
     <Grid Margin="15,8,5,8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto"></ColumnDefinition>
