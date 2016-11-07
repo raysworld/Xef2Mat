@@ -70,6 +70,9 @@ namespace XEF2MAT
         private void B_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             label3.Content = "Completed!";
+
+            button.IsEnabled = true;
+            button.Content = "Select";
         }
 
         public static void Copy(IntPtr source, ushort[] destination, int startIndex, int length)
@@ -101,6 +104,9 @@ namespace XEF2MAT
             if (result.HasValue && result.Value)
             {
                 fileName = openFileDialog.FileName;
+                
+                button.IsEnabled = false;
+                button.Content = "Working...";
                 b.RunWorkerAsync();
             }
             else
@@ -111,9 +117,6 @@ namespace XEF2MAT
 
         private void DirtyWork(object sender, DoWorkEventArgs e)
         {
-            button.IsEnabled = false;
-            button.Content = "Working...";
-
             outputData = new ushort[WIDTH * HEIGHT];
 
             var client = KStudio.CreateClient();
@@ -190,9 +193,6 @@ namespace XEF2MAT
                 string filePath = Environment.CurrentDirectory + "/Xef2Mat_Output/TimeStamp.mat";
                 MATWriter.ToMatFile("Time", filePath, this.timing, this.timing.Length, 1);
             }
-
-            button.IsEnabled = true;
-            button.Content = "Select";
         }
     }
 }
