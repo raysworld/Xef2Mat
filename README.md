@@ -1,4 +1,4 @@
-# Xef2Mat
+ Xef2Mat
 WPF-based converter for converting Kinect Studio data file (.xef) to Matlab data file (.mat)
 
 ------------------------------------------------------------------------------------------------------
@@ -14,6 +14,5 @@ WPF-based converter for converting Kinect Studio data file (.xef) to Matlab data
  * Notes:
  *  It seems that this app only works on x64 platforms
  * How-to-use:
- *  Simply run xef2mat.exe, select the .xef file by clicking on the 'select' button. The output files
- *  will be at the same folder of the app.
+ *  Simply run xef2mat.exe, select the .xef file by clicking on the 'select' button. The output files will be at the same folder of the app.
 ------------------------------------------------------------------------------------------------------
