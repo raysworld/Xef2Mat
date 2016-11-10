@@ -15,7 +15,7 @@ The project is based on the following references:
 -MATWriter (Written by SergentMT, which you may find here: http://www.codeproject.com/Tips/819613/Kinect-Version-Depth-Frame-to-mat-File-Exporter)  
 
 ###Notes:
-It seems that this app only works on x64 platforms.  
+It seems that this app only works on x64 platforms in debug mode   
 
 ###How-to-use:
 Simply run xef2mat.exe, select the .xef file by clicking on the 'select' button. The output files will be at the same folder of the app.  
