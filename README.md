@@ -20,3 +20,5 @@ It seems that this app only works on x64 platforms in debug mode
 ### How-to-use:
 Simply run xef2mat.exe, select the .xef file by clicking on the 'select' button. The output files will be at the same folder of the app.  
 
+### Related links:
+You may visit https://github.com/Isaac-W/KinectXEFTools to find a .NET framework based xef reader.
