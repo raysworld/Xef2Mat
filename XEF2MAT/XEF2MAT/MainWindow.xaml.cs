@@ -35,7 +35,7 @@ namespace XEF2MAT
         private const int WIDTH = 512;          // Width of the depth image
         private const int HEIGHT = 424;         // Height of the depth image
 
-        private string fileName = null;         // File name of the imported .xef file
+        public string fileName = null;         // File name of the imported .xef file
 
         private int frameCount = 0;             // The number of frames
         private ushort[] timing = null;         // Storage the time stamp of the frames
@@ -45,7 +45,7 @@ namespace XEF2MAT
 
         private BackgroundWorker b;             // Handle the export process in background
 
-        public MainWindow()
+        public MainWindow(StartupEventArgs e)
         {
             InitializeComponent();
         }
@@ -116,7 +116,7 @@ namespace XEF2MAT
             }
         }
 
-        private void DirtyWork(object sender, DoWorkEventArgs e)
+        public void RealWork()
         {
             outputData = new ushort[WIDTH * HEIGHT];
 
@@ -133,7 +133,7 @@ namespace XEF2MAT
                 if (item.DataTypeName.Equals("Nui Depth"))
                 {
                     state = "Depth";
-                    
+
                     KStudioSeekableEventStream stream = item as KStudioSeekableEventStream;
                     this.frameCount = (int)stream.EventCount;
                     timing = new ushort[frameCount];
@@ -195,6 +195,11 @@ namespace XEF2MAT
                 string filePath = Environment.CurrentDirectory + "/Xef2Mat_Output/TimeStamp.mat";
                 MATWriter.ToMatFile("Time", filePath, this.timing, this.timing.Length, 1);
             }
+        }
+
+        private void DirtyWork(object sender, DoWorkEventArgs e)
+        {
+            RealWork();
         }
     }
 }
