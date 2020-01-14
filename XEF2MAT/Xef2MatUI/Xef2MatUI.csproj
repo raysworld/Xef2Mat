@@ -26,13 +26,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>kinect.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Kinect, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -118,6 +121,10 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(SolutionDir)XEF2MATCore\runtime\KStudioService.dll" "$(TargetDir)" /S /R /Y /I</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(SolutionDir)XEF2MATCore\runtime\KStudioService.dll" "$(TargetDir)" /S /R /Y /I
+mkdir "$(SolutionDir)..\binary\"
+xcopy "$(TargetDir)*.dll" "$(SolutionDir)..\binary\" /S /R /Y /I
+xcopy  "$(TargetPath)" "$(SolutionDir)..\binary\" /S /R /Y /I
+ren "$(SolutionDir)..\binary\$(TargetFileName)" "Xef2Mat$(TargetExt)"</PostBuildEvent>
   </PropertyGroup>
 </Project>

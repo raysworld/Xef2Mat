@@ -40,12 +40,7 @@ namespace XEF2MATCore
         public delegate void ExportHandler();
         public event ExportHandler ExportFinished;
         public void OnExportFinished() => ExportFinished?.Invoke();
-
-
-        public Xef2MatCore()
-        {            
-        }
-
+                
         public void Load(string path, string out_path)
         {
             IsStreamLoaded = false;
