@@ -4,6 +4,10 @@ using Microsoft.Kinect;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
+using System.IO;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace XEF2MATCore
 {
@@ -25,9 +29,9 @@ namespace XEF2MATCore
         public event FileLoadedHandler FileLoaded;
         public void OnFileLoaded() => FileLoaded?.Invoke();
 
-        public delegate void ConvertProgressHandler(int progress);
+        public delegate void ConvertProgressHandler(double progress);
         public event ConvertProgressHandler ProgressUpdated;
-        public void OnProgressUpdated(int progress) => ProgressUpdated?.Invoke(progress);
+        public void OnProgressUpdated(double progress) => ProgressUpdated?.Invoke(progress);
 
         public delegate void ExportHandler();
         public event ExportHandler ExportFinished;
@@ -36,7 +40,7 @@ namespace XEF2MATCore
 
         public Xef2MatCore()
         {
-            var kc = KStudio.CreateClient();
+            //var kc = KStudio.CreateClient();
             //KinectClient = KStudio.CreateClient();
         }
 
@@ -47,7 +51,8 @@ namespace XEF2MATCore
             if (string.IsNullOrEmpty(path)) return;
 
             Path = path;
-            var file = KinectClient.OpenEventFile(Path);
+            var client = KStudio.CreateClient();
+            var file = client.OpenEventFile(Path);
 
             if (file != null && file.EventStreams != null)
             {
@@ -65,14 +70,23 @@ namespace XEF2MATCore
             var outputData = new ushort[KinectParameter.WIDTH * KinectParameter.HEIGHT]; // Storage the data of the frames
             var frame_count = (int)stream.EventCount;
             var timing = new ushort[frame_count];
-
+            
             for (uint i = 0; i < frame_count; i++)
             {
-                var progress = (int)((float)i / frame_count * 100);
+                var progress = (float)i / frame_count * 100;
                 OnProgressUpdated(progress);
 
+                //try
+                //{
                 var curr_event = stream.ReadEvent(i);
-                unsafe
+                //}
+                //catch (Exception e)
+                //{
+                //    var s = e.Message;
+                //}
+
+
+                //unsafe
                 {
                     int size = outputData.Length * sizeof(ushort);
                     IntPtr ip = Marshal.AllocHGlobal(size);
@@ -87,8 +101,8 @@ namespace XEF2MATCore
                 var frame_path = $"{file_path}/{name}_{i.ToString("D5")}.mat";
                 MATWriter.ToMatFile(
                     name,
-                    frame_path, 
-                    outputData, 
+                    frame_path,
+                    outputData,
                     KinectParameter.HEIGHT, KinectParameter.WIDTH);
             }
 
@@ -97,8 +111,8 @@ namespace XEF2MATCore
                 var timing_path = $"{file_path}/TimeSteps.mat";
                 MATWriter.ToMatFile(
                     "Time",
-                    timing_path, 
-                    timing, 
+                    timing_path,
+                    timing,
                     timing.Length, 1);
             }
         }
@@ -118,7 +132,12 @@ namespace XEF2MATCore
         public void SaveToMat(KinectStreamType type, string path = null)
         {
             if (!IsStreamLoaded) return;
-            if (string.IsNullOrWhiteSpace(path)) path = $"{Environment.CurrentDirectory}/output";
+            if (string.IsNullOrWhiteSpace(path))
+                path = $"{Environment.CurrentDirectory}/output";
+            else
+                path = $"{path}/output";
+           
+            Directory.CreateDirectory(path); 
 
             switch (type)
             {
@@ -149,5 +168,17 @@ namespace XEF2MATCore
             OnExportFinished();
         }
 
+        public async Task ExportAllAsync(string path)
+        {
+            if (!IsStreamLoaded) return;
+
+            await Task.Run(() =>
+            {
+                SaveToMat(KinectStreamType.Depth, path);
+                SaveToMat(KinectStreamType.IR, path);
+
+                OnExportFinished();
+            });            
+        }
     }
 }

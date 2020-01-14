@@ -34,6 +34,7 @@
         <Button Grid.Column="0" Grid.Row="1" 
                 x:Name="button" 
                 Content="Select" 
+                IsEnabled="{Binding IsButtonEnabled, Mode=OneWay}"
                 HorizontalAlignment="Left" VerticalAlignment="Center" 
                 Command="{Binding SelectFileCommand}"
                 />
@@ -41,9 +42,10 @@
                x:Name="label2" Content="Progress:" 
                HorizontalAlignment="Left" VerticalAlignment="Center"/>
         <ProgressBar Grid.Column="0" Grid.Row="3" 
-                     x:Name="progressBar"/>
+                     x:Name="progressBar"
+                     Value="{Binding Progress, Mode=OneWay}"/>
         <Label Grid.Column="1" Grid.Row="3" 
-               x:Name="label3" Content="Standby" 
+               x:Name="label3" Content="{Binding Progress, Mode=OneWay, StringFormat={}{0}%}" 
                HorizontalAlignment="Center"  VerticalAlignment="Center"/>
     </Grid>
 </Window>
