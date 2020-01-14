@@ -22,6 +22,13 @@ namespace Xef2MatUI
             set => Set(ref _progress, value);
         }
 
+        public string _message;
+        public string Message
+        {
+            get => _message;
+            set => Set(ref _message, value);
+        }
+
         private string _fileName;
         public string FileName
         {
@@ -46,68 +53,63 @@ namespace Xef2MatUI
         public ViewModel()
         {
             Progress = 0;
+            Message = "Ready";
             FileName = "";
-            IsButtonEnabled = true;
-
-            XCore = new Xef2MatCore();
-            XCore.ProgressUpdated += XCore_ProgressUpdated;
-            XCore.FileLoaded += XCore_FileLoaded;
-            XCore.ExportFinished += XCore_ExportFinished;
+            IsButtonEnabled = true;            
         }
-        
-        private void XCore_FileLoaded()=> IsButtonEnabled = false;
-        private void XCore_ProgressUpdated(double progress) => Progress = progress;
+
+        private void XCore_FileLoaded()
+        {
+            IsButtonEnabled = false;
+        }
+        private void XCore_ProgressUpdated(string name, double progress)
+        {
+            Progress = progress;
+            Message = $"[{name}] - [ {progress.ToString("F2")}% ]";
+        }
         private void XCore_ExportFinished()
         { 
             IsButtonEnabled = true; 
-            Progress = 0; 
+            Progress = 0;
+            Message = $"Proceeded";
         }
 
-        public IAsyncCommand SelectFileCommand { get => new AsyncCommand(UpdateFileSelectionExecute, CanFileSelectionExecute); }
-
+        public IAsyncCommand SelectFileCommandAsync { get => new AsyncCommand(UpdateFileSelectionExecuteAsync, CanFileSelectionExecute); }
         private bool CanFileSelectionExecute() => !IsBusy;
-
-        private async Task UpdateFileSelectionExecute()
+        private async Task UpdateFileSelectionExecuteAsync()
         {
+
             var folder_path = Environment.CurrentDirectory;
             if (!Directory.Exists(folder_path)) Directory.CreateDirectory(folder_path);
 
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.InitialDirectory = Environment.CurrentDirectory;
-            openFileDialog.Filter = "Kinect Studio Data File|*.xef";
-            openFileDialog.RestoreDirectory = true;
-            openFileDialog.FilterIndex = 1;
-            
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                InitialDirectory = Environment.CurrentDirectory,
+                Filter = "Kinect Studio Data File|*.xef",
+                RestoreDirectory = true,
+                FilterIndex = 1
+            };
+
             var result = openFileDialog.ShowDialog();
             if (result.HasValue && result.Value)
             {
                 FileName = openFileDialog.FileName;
 
                 IsBusy = true;
-                IsButtonEnabled = false;
-                //XCore.Load(FileName);
-                //await XCore.ExportAllAsync($"C:/Users/raysw/Downloads/20150622_125509_00");
-                await Do_work();
 
-                IsButtonEnabled = true;
+                XCore = new Xef2MatCore();
+                XCore.FileLoaded += XCore_FileLoaded;
+                XCore.ProgressUpdated += XCore_ProgressUpdated;
+                XCore.ExportFinished += XCore_ExportFinished;
+
+                await XCore.LoadAsync(FileName);
+
                 IsBusy = false;
             }
             else
             {
                 return;
             }
-        }
-
-        private async Task Do_work()
-        {
-            await Task.Run(() =>
-            {
-                while (Progress < 100)
-                {
-                    Progress++;
-                    Thread.Sleep(100);
-                }                              
-            });
         }
     }
 }

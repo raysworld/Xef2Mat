@@ -8,7 +8,10 @@
         Icon="kinect.ico"
         ResizeMode="CanMinimize" 
         Title="Xef2Mat Converter" 
-        Height="150" Width="300">
+        Height="150" Width="330">
+    <Window.DataContext>
+        <local:ViewModel x:Name="_viewmodel"/>
+    </Window.DataContext>
     <Window.Resources>
         <Style x:Key="MainWindowGridStyle" TargetType="{x:Type Grid}">
             <Setter Property="Margin" Value="12,8,12,8"/>
@@ -17,7 +20,7 @@
     </Window.Resources>
     <Grid Style="{DynamicResource MainWindowGridStyle}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="auto"></ColumnDefinition>
             <ColumnDefinition Width="auto"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -36,16 +39,18 @@
                 Content="Select" 
                 IsEnabled="{Binding IsButtonEnabled, Mode=OneWay}"
                 HorizontalAlignment="Left" VerticalAlignment="Center" 
-                Command="{Binding SelectFileCommand}"
+                Command="{Binding SelectFileCommandAsync}"
                 />
         <Label Grid.Column="0" Grid.Row="2" 
                x:Name="label2" Content="Progress:" 
                HorizontalAlignment="Left" VerticalAlignment="Center"/>
         <ProgressBar Grid.Column="0" Grid.Row="3" 
                      x:Name="progressBar"
-                     Value="{Binding Progress, Mode=OneWay}"/>
+                     Value="{Binding Progress, Mode=OneWay}"
+                     VerticalAlignment="Center"/>
         <Label Grid.Column="1" Grid.Row="3" 
-               x:Name="label3" Content="{Binding Progress, Mode=OneWay, StringFormat={}{0}%}" 
+               x:Name="label3" 
+               Content="{Binding Message, Mode=OneWay}" 
                HorizontalAlignment="Center"  VerticalAlignment="Center"/>
     </Grid>
 </Window>

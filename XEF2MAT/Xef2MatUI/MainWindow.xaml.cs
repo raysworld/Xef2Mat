@@ -24,7 +24,6 @@ namespace Xef2MatUI
         {
             InitializeComponent();
 
-            DataContext = new ViewModel();
         }
     }
 }

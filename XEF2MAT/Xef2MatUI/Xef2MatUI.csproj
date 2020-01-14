@@ -117,4 +117,7 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "$(SolutionDir)XEF2MATCore\runtime\KStudioService.dll" "$(TargetDir)" /S /R /Y /I</PostBuildEvent>
+  </PropertyGroup>
 </Project>

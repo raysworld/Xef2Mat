@@ -8,6 +8,7 @@ using System.Security.AccessControl;
 using System.IO;
 using System.Threading.Tasks;
 using System.Threading;
+using System.ComponentModel;
 
 namespace XEF2MATCore
 {
@@ -19,7 +20,6 @@ namespace XEF2MATCore
     }
     public class Xef2MatCore
     {
-        public KStudioClient KinectClient { get; private set; }
         public string Path { get; private set; }
         public KStudioEventStream DepthStream { get; private set; }
         public KStudioEventStream IRStream { get; private set; }
@@ -27,64 +27,94 @@ namespace XEF2MATCore
 
         public delegate void FileLoadedHandler();
         public event FileLoadedHandler FileLoaded;
-        public void OnFileLoaded() => FileLoaded?.Invoke();
+        public void OnFileLoaded()
+        {
+            IsStreamLoaded = true; 
+            FileLoaded?.Invoke();
+        }
 
-        public delegate void ConvertProgressHandler(double progress);
+        public delegate void ConvertProgressHandler(string name, double progress);
         public event ConvertProgressHandler ProgressUpdated;
-        public void OnProgressUpdated(double progress) => ProgressUpdated?.Invoke(progress);
-
+        public void OnProgressUpdated(string name, double progress) => ProgressUpdated?.Invoke(name, progress);
+                          
         public delegate void ExportHandler();
         public event ExportHandler ExportFinished;
         public void OnExportFinished() => ExportFinished?.Invoke();
 
 
         public Xef2MatCore()
-        {
-            //var kc = KStudio.CreateClient();
-            //KinectClient = KStudio.CreateClient();
+        {            
         }
 
-        public void Load(string path)
+        public void Load(string path, string out_path)
         {
             IsStreamLoaded = false;
 
             if (string.IsNullOrEmpty(path)) return;
 
             Path = path;
-            var client = KStudio.CreateClient();
-            var file = client.OpenEventFile(Path);
-
-            if (file != null && file.EventStreams != null)
+            using (KStudioClient client = KStudio.CreateClient())
             {
-                DepthStream = file.EventStreams.First(t => t.DataTypeName.Equals("Nui Depth"));
-                IRStream = file.EventStreams.First(t => t.DataTypeName.Equals("Nui IR"));
+                var file = client.OpenEventFile(Path, KStudioEventFileFlags.None);
+                if (file != null && file.EventStreams != null)
+                {
+                    DepthStream = file.EventStreams.First(t => t.DataTypeName.Equals("Nui Depth"));
+                    IRStream = file.EventStreams.First(t => t.DataTypeName.Equals("Nui IR"));
+                    
+                    OnFileLoaded();
 
-                IsStreamLoaded = true;
-
-                OnFileLoaded();
+                    string folder_path = string.IsNullOrWhiteSpace(out_path) 
+                        ? $"{Environment.CurrentDirectory}/output" 
+                        : out_path;
+                                        
+                    if (!Directory.Exists(folder_path)) Directory.CreateDirectory(folder_path);
+                    
+                    StreamToMat(DepthStream, "Depth", folder_path);
+                    StreamToMat(IRStream, "IR", folder_path);
+                }
             }
+            OnExportFinished();
         }
 
-        private void StreamToMat(KStudioSeekableEventStream stream, string name, string file_path)
+        public async Task LoadAsync(string path)
         {
+            IsStreamLoaded = false;
+
+            if (string.IsNullOrEmpty(path)) return;
+
+            Path = path;
+            using (KStudioClient client = KStudio.CreateClient())
+            {
+                var file = client.OpenEventFile(Path, KStudioEventFileFlags.None);
+                if (file != null && file.EventStreams != null)
+                {
+                    DepthStream = file.EventStreams.First(t => t.DataTypeName.Equals("Nui Depth"));
+                    IRStream = file.EventStreams.First(t => t.DataTypeName.Equals("Nui IR"));
+
+                    OnFileLoaded();
+
+                    var folder_path = $"{Environment.CurrentDirectory}/output";
+                    if (!Directory.Exists(folder_path)) Directory.CreateDirectory(folder_path);
+                    await StreamToMatAsync(DepthStream, "Depth", folder_path);
+                    await StreamToMatAsync(IRStream, "IR", folder_path);
+                }
+            }
+            OnExportFinished();
+        }
+
+        private void StreamToMat(KStudioEventStream kstream, string name, string file_path)
+        {
+            var stream = kstream as KStudioSeekableEventStream;
             var outputData = new ushort[KinectParameter.WIDTH * KinectParameter.HEIGHT]; // Storage the data of the frames
             var frame_count = (int)stream.EventCount;
             var timing = new ushort[frame_count];
-            
+
             for (uint i = 0; i < frame_count; i++)
             {
-                var progress = (float)i / frame_count * 100;
-                OnProgressUpdated(progress);
+                var progress = (float)(i+1) / frame_count * 100;
+                OnProgressUpdated(name, progress);
 
-                //try
-                //{
                 var curr_event = stream.ReadEvent(i);
-                //}
-                //catch (Exception e)
-                //{
-                //    var s = e.Message;
-                //}
-
 
                 //unsafe
                 {
@@ -114,8 +144,61 @@ namespace XEF2MATCore
                     timing_path,
                     timing,
                     timing.Length, 1);
+                OnProgressUpdated("TimeSpan", 100);
             }
         }
+
+        private async Task StreamToMatAsync(KStudioEventStream kstream, string name, string file_path)
+        {
+            var stream = kstream as KStudioSeekableEventStream;
+            var outputData = new ushort[KinectParameter.WIDTH * KinectParameter.HEIGHT]; // Storage the data of the frames
+            var frame_count = (int)stream.EventCount;
+            var timing = new ushort[frame_count];
+
+            for (uint i = 0; i < frame_count; i++)
+            {
+                var progress = (float)i / frame_count * 100;
+                OnProgressUpdated(name, progress);
+
+                await Task.Run(()=>
+                {
+                    var curr_event = stream.ReadEvent(i);
+
+                    //unsafe
+                    {
+                        int size = outputData.Length * sizeof(ushort);
+                        IntPtr ip = Marshal.AllocHGlobal(size);
+
+                        uint bufferSize = 0;
+                        curr_event.AccessUnderlyingEventDataBuffer(out bufferSize, out ip);
+
+                        Copy(ip, outputData, 0, outputData.Length);
+                    }
+                    timing[i] = (ushort)curr_event.RelativeTime.TotalMilliseconds;
+
+                    var frame_path = $"{file_path}/{name}_{i.ToString("D5")}.mat";
+                    MATWriter.ToMatFile(
+                        name,
+                        frame_path,
+                        outputData,
+                        KinectParameter.HEIGHT, KinectParameter.WIDTH);
+                });                
+            }
+
+            if (frame_count > 0)
+            {
+                await Task.Run(() =>
+                {
+                    var timing_path = $"{file_path}/TimeSteps.mat";
+                    MATWriter.ToMatFile(
+                        "Time",
+                        timing_path,
+                        timing,
+                        timing.Length, 1);
+                });
+                OnProgressUpdated("TimeSpan", 100);
+            }
+        }        
 
         public static void Copy(IntPtr source, ushort[] destination, int startIndex, int length)
         {
@@ -127,58 +210,6 @@ namespace XEF2MATCore
                     destination[i] = *sourcePtr++;
                 }
             }
-        }
-
-        public void SaveToMat(KinectStreamType type, string path = null)
-        {
-            if (!IsStreamLoaded) return;
-            if (string.IsNullOrWhiteSpace(path))
-                path = $"{Environment.CurrentDirectory}/output";
-            else
-                path = $"{path}/output";
-           
-            Directory.CreateDirectory(path); 
-
-            switch (type)
-            {
-                case KinectStreamType.Depth: 
-                    {
-                        StreamToMat(DepthStream as KStudioSeekableEventStream, "Depth", path);
-                        break;
-                    }
-                case KinectStreamType.IR:
-                    {
-                        StreamToMat(IRStream as KStudioSeekableEventStream, "IR", path);
-                        break;
-                    }
-                case KinectStreamType.Opaque:
-                case KinectStreamType.Body:
-                default:
-                    break;
-            }
-        }
-
-        public void ExportAll(string path)
-        {
-            if (!IsStreamLoaded) return;
-
-            SaveToMat(KinectStreamType.Depth, path);
-            SaveToMat(KinectStreamType.IR, path);
-
-            OnExportFinished();
-        }
-
-        public async Task ExportAllAsync(string path)
-        {
-            if (!IsStreamLoaded) return;
-
-            await Task.Run(() =>
-            {
-                SaveToMat(KinectStreamType.Depth, path);
-                SaveToMat(KinectStreamType.IR, path);
-
-                OnExportFinished();
-            });            
-        }
+        }             
     }
 }
