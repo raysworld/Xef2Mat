@@ -21,6 +21,8 @@ The project is based on the following references:
 It seems that this app only works on **x64** platforms in **debug** mode   
 
 ### How-to-use:
+`git clone` and then bulid the repo with Visual Studio 2013 or later, or download the binary from [here](https://github.com/raysworld/Xef2Mat/releases/download/v0.2/xef2mat_dbg_x64.7z).
+
 ##### Run with GUI
 
 Simply run xef2mat.exe, select the .xef file by clicking on the 'select' button. The output files will be at the same folder of the app.  
