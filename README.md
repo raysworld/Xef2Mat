@@ -23,7 +23,7 @@ It seems that this app only works on **x64** platforms in **debug** mode  (For t
 ### How-to-use:
 
 - install Microsoft Kinect SDK 2.0
-- `git clone` and then build the repo with Visual Studio 2017 or later, or download the binary from [here](https://github.com/raysworld/Xef2Mat/releases/download/v0.2/xef2mat_dbg_x64.7z).
+- `git clone` and then build the repo with Visual Studio 2017 or later, or download the binary from [here](https://github.com/raysworld/Xef2Mat/releases).
 - see `demo/demo_import_data.m` a demo script for importing the data into Matlab.
 
 ##### Run with GUI
