@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>kinect.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="kinect.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\XEF2MAT_Core\XEF2MAT_Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="kinect.ico" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="rmdir /s /q &quot;$(SolutionDir)..\binary\&quot; 2&gt;nul&#xD;&#xA;mkdir &quot;$(SolutionDir)..\binary\&quot;&#xD;&#xA;xcopy &quot;$(TargetDir)*.dll&quot; &quot;$(SolutionDir)..\binary\&quot; /S /R /Y /I&#xD;&#xA;xcopy &quot;$(TargetDir)*.exe&quot; &quot;$(SolutionDir)..\binary\&quot; /S /R /Y /I&#xD;&#xA;xcopy &quot;$(TargetDir)$(TargetName).runtimeconfig.json&quot; &quot;$(SolutionDir)..\binary\&quot; /S /R /Y /I&#xD;&#xA;ren &quot;$(SolutionDir)..\binary\$(TargetName).exe&quot; &quot;Xef2Mat.exe&quot;" />
+  </Target>
+
+</Project>

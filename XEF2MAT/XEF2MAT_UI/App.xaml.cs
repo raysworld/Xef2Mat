@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using XEF2MATCore;
-using System.Threading;
-using System.IO;
 
-namespace Xef2MatUI
+namespace XEF2MAT_UI
 {
     /// <summary>
     /// Interaction logic for App.xaml
@@ -19,7 +18,7 @@ namespace Xef2MatUI
     {
         [DllImport("Kernel32.dll")]
         public static extern bool AttachConsole(int processID);
-        
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -29,8 +28,8 @@ namespace Xef2MatUI
                 if (e.Args.Length > 0)
                 {
                     AttachConsole(-1);
-                    ConsoleLoad(e.Args);             
-                }                
+                    ConsoleLoad(e.Args);
+                }
             }
             else
             {
@@ -73,7 +72,7 @@ namespace Xef2MatUI
                         ? $"{Environment.CurrentDirectory}/output"
                         : out_folder_path;
 
-                
+
                 Console.WriteLine($"[INFO] Input File: {in_file_path}");
                 Console.WriteLine($"[INFO] Output Folder: {out_folder_path}");
 
@@ -98,12 +97,12 @@ namespace Xef2MatUI
 
         private void Core_FileLoaded()
         {
-            Console.Write("Ready to start the conversion!");            
+            Console.Write("Ready to start the conversion!");
         }
 
         private void Core_ProgressUpdated(string name, double prog)
         {
             Console.WriteLine($"[{name}] - [ {prog.ToString("F2")}% ]");
         }
-    }    
+    }
 }

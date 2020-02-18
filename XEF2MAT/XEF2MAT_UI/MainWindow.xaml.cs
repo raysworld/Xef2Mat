@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Xef2MatUI
+namespace XEF2MAT_UI
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -23,7 +23,6 @@ namespace Xef2MatUI
         public MainWindow(StartupEventArgs e)
         {
             InitializeComponent();
-
         }
     }
 }

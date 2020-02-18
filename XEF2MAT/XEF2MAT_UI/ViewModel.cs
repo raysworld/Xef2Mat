@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using XEF2MATCore;
 
-namespace Xef2MatUI
+namespace XEF2MAT_UI
 {
     public class ViewModel: ObservableObject
     {
