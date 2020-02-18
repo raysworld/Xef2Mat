@@ -1,3 +1,5 @@
+![.NET Core](https://github.com/raysworld/Xef2Mat/workflows/.NET%20Core/badge.svg?branch=master)
+
 # Xef2Mat
 WPF-based converter for converting Kinect Studio data file (`.xef`) to Matlab data file (`.mat`)  
 
